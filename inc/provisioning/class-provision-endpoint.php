@@ -674,4 +674,36 @@ class Provision_Endpoint {
 
         return $op;
     }
+
+    /**
+     * PUT /wu/v2/provision/:id/brand — Incremental brand push.
+     *
+     * Accepts partial brand data. Only provided fields are applied.
+     * Idempotent — pushing the same values twice is harmless.
+     */
+    public function handle_brand(WP_REST_Request $request): WP_REST_Response {
+        $op = $this->find_operation($request);
+        if (is_wp_error($op)) return new WP_REST_Response($op->get_error_data(), 404);
+
+        $site_id = (int) $op->site_id;
+        if (! $site_id) return new WP_REST_Response(['code' => 'no_site', 'message' => 'No site provisioned yet.'], 400);
+
+        $brand = $request->get_json_params();
+        if (empty($brand)) return new WP_REST_Response(['code' => 'empty', 'message' => 'No brand data provided.'], 400);
+
+        $result = \Sharehaus\Provisioning\Divi_Brand_Adapter::push($site_id, $brand);
+
+        if (is_wp_error($result)) {
+            return new WP_REST_Response([
+                'code'    => 'brand_push_failed',
+                'message' => $result->get_error_message(),
+            ], 500);
+        }
+
+        return new WP_REST_Response([
+            'provision_id' => (int) $op->provision_id,
+            'site_id'      => $site_id,
+            'applied'      => $result,
+        ], 200);
+    }
 }

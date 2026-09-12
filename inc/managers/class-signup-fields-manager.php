@@ -48,30 +48,27 @@ class Signup_Fields_Manager extends Base_Manager {
 	public function get_field_types() {
 
 		$field_types = [
-			'pricing_table'      => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Pricing_Table::class,
-			'period_selection'   => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Period_Selection::class,
-			'products'           => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Products::class,
-			'template_selection' => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Template_Selection::class,
-			'username'           => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Username::class,
-			'email'              => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Email::class,
-			'password'           => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Password::class,
-			'site_title'         => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Site_Title::class,
-			'site_url'           => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Site_Url::class,
-			'discount_code'      => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Discount_Code::class,
-			'order_summary'      => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Order_Summary::class,
-			'payment'            => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Payment::class,
-			'order_bump'         => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Order_Bump::class,
-			'billing_address'    => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Billing_Address::class,
-			'steps'              => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Steps::class,
-			'text'               => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Text::class,
-			'checkbox'           => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Checkbox::class,
-			'color_picker'       => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Color::class,
-			'select'             => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Select::class,
-			'hidden'             => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Hidden::class,
-			'shortcode'          => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Shortcode::class,
-			'terms_of_use'       => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Terms_Of_Use::class,
-			'submit_button'      => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Submit_Button::class,
-		];
+					// Payment fields REMOVED — Studio handles checkout/payment
+					// 'pricing_table', 'period_selection', 'products', 'discount_code',
+					// 'order_summary', 'payment', 'order_bump', 'billing_address',
+
+					// Provisioning fields (kept)
+					'template_selection' => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Template_Selection::class,
+					'username'           => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Username::class,
+					'email'              => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Email::class,
+					'password'           => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Password::class,
+					'site_title'         => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Site_Title::class,
+					'site_url'           => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Site_Url::class,
+					'steps'              => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Steps::class,
+					'text'               => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Text::class,
+					'checkbox'           => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Checkbox::class,
+					'color_picker'       => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Color::class,
+					'select'             => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Select::class,
+					'hidden'             => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Hidden::class,
+					'shortcode'          => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Shortcode::class,
+					'terms_of_use'       => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Terms_Of_Use::class,
+					'submit_button'      => \WP_Ultimo\Checkout\Signup_Fields\Signup_Field_Submit_Button::class,
+				];
 
 		/*
 		 * Allow developers to add new field types
