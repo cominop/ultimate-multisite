@@ -1038,7 +1038,8 @@ final class WP_Ultimo {
 		/*
 		 * Loads the Rating Notice manager.
 		 */
-		WP_Ultimo\Managers\Rating_Notice_Manager::get_instance();
+				// Rating Notice Manager DISABLED — ShareHaus fork.
+				// WP_Ultimo\Managers\Rating_Notice_Manager::get_instance();
 
 		/**
 		 * Loads views overrides
