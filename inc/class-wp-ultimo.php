@@ -169,7 +169,8 @@ final class WP_Ultimo {
 		$this->settings = WP_Ultimo\Settings::get_instance();
 
 		// These must be loaded here so the settings are in the setup wizard.
-		WP_Ultimo\Newsletter::get_instance();
+		// Newsletter DISABLED — ShareHaus fork.
+		// WP_Ultimo\Newsletter::get_instance();
 		\WP_Ultimo\Credits::get_instance();
 
 		/*
