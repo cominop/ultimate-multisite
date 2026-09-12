@@ -151,6 +151,8 @@ add_action('plugins_loaded', function () {
     // Ensure provisioning classes are loaded (classmap autoload may need regeneration)
     $dir = __DIR__ . '/inc/provisioning/';
     require_once $dir . 'class-provisioning-table.php';
+    require_once $dir . 'class-profile-registry.php';
+    require_once $dir . 'class-profile-reconciler.php';
     require_once $dir . 'class-provision-endpoint.php';
     require_once $dir . 'class-bootstrap.php';
 

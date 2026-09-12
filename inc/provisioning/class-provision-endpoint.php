@@ -64,6 +64,76 @@ class Provision_Endpoint {
             'callback'            => [$this, 'handle_status'],
             'permission_callback' => [$this, 'check_api_key'],
         ]);
+
+        // PUT /wu/v2/provision/:id/profile
+        register_rest_route($namespace, '/provision/(?P<id>\d+)/profile', [
+            'methods'             => \WP_REST_Server::EDITABLE,
+            'callback'            => [$this, 'handle_profile'],
+            'permission_callback' => [$this, 'check_api_key'],
+        ]);
+
+        // PUT /wu/v2/provision/:id/capabilities
+        register_rest_route($namespace, '/provision/(?P<id>\d+)/capabilities', [
+            'methods'             => \WP_REST_Server::EDITABLE,
+            'callback'            => [$this, 'handle_capabilities'],
+            'permission_callback' => [$this, 'check_api_key'],
+        ]);
+
+        // PUT /wu/v2/provision/:id/plugins
+        register_rest_route($namespace, '/provision/(?P<id>\d+)/plugins', [
+            'methods'             => \WP_REST_Server::EDITABLE,
+            'callback'            => [$this, 'handle_plugins'],
+            'permission_callback' => [$this, 'check_api_key'],
+        ]);
+
+        // PUT /wu/v2/provision/:id/state
+        register_rest_route($namespace, '/provision/(?P<id>\d+)/state', [
+            'methods'             => \WP_REST_Server::EDITABLE,
+            'callback'            => [$this, 'handle_state'],
+            'permission_callback' => [$this, 'check_api_key'],
+        ]);
+
+        // PUT /wu/v2/provision/:id/domain
+        register_rest_route($namespace, '/provision/(?P<id>\d+)/domain', [
+            'methods'             => \WP_REST_Server::EDITABLE,
+            'callback'            => [$this, 'handle_domain'],
+            'permission_callback' => [$this, 'check_api_key'],
+        ]);
+
+        // POST /wu/v2/provision/:id/archive
+        register_rest_route($namespace, '/provision/(?P<id>\d+)/archive', [
+            'methods'             => \WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'handle_archive'],
+            'permission_callback' => [$this, 'check_api_key'],
+        ]);
+
+        // POST /wu/v2/provision/:id/restore
+        register_rest_route($namespace, '/provision/(?P<id>\d+)/restore', [
+            'methods'             => \WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'handle_restore'],
+            'permission_callback' => [$this, 'check_api_key'],
+        ]);
+
+        // POST /wu/v2/provision/:id/purge
+        register_rest_route($namespace, '/provision/(?P<id>\d+)/purge', [
+            'methods'             => \WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'handle_purge'],
+            'permission_callback' => [$this, 'check_api_key'],
+        ]);
+
+        // GET /wu/v2/operational-profiles
+        register_rest_route($namespace, '/operational-profiles', [
+            'methods'             => \WP_REST_Server::READABLE,
+            'callback'            => [$this, 'handle_list_profiles'],
+            'permission_callback' => [$this, 'check_api_key'],
+        ]);
+
+        // GET /wu/v2/templates
+        register_rest_route($namespace, '/templates', [
+            'methods'             => \WP_REST_Server::READABLE,
+            'callback'            => [$this, 'handle_list_templates'],
+            'permission_callback' => [$this, 'check_api_key'],
+        ]);
     }
 
     /**
@@ -327,5 +397,281 @@ class Provision_Endpoint {
                 'type' => 'string',
             ],
         ];
+    }
+
+    // ─── Additional API Handlers ────────────────────────────────────
+
+    /**
+     * PUT /wu/v2/provision/:id/profile — Reconcile site against an operational profile.
+     */
+    public function handle_profile(WP_REST_Request $request): WP_REST_Response {
+        $op = $this->find_operation($request);
+        if (is_wp_error($op)) {
+            return new WP_REST_Response($op->get_error_data(), $op->get_error_code() === 'not_found' ? 404 : 400);
+        }
+
+        $body     = $request->get_json_params();
+        $site_id  = (int) $op->site_id;
+        $is_upgrade = ! empty($body['is_upgrade']);
+
+        if (! $site_id) {
+            return new WP_REST_Response(['code' => 'no_site', 'message' => 'No site provisioned yet.'], 400);
+        }
+
+        $profile_id      = $body['operational_profile'] ?? $op->op_profile;
+        $profile_version = (int) ($body['profile_version'] ?? $op->profile_version);
+
+        $profile = Profile_Registry::get($profile_id, $profile_version);
+
+        if (! $profile) {
+            return new WP_REST_Response([
+                'code'    => 'profile_not_found',
+                'message' => "Profile {$profile_id} v{$profile_version} not found.",
+            ], 404);
+        }
+
+        $changes = Profile_Reconciler::reconcile($site_id, $profile, $is_upgrade);
+
+        Provisioning_Table::update((int) $op->provision_id, [
+            'op_profile'      => $profile_id,
+            'profile_version' => $profile_version,
+        ]);
+
+        return new WP_REST_Response([
+            'status'          => 'active',
+            'profile'         => $profile_id,
+            'profile_version' => $profile_version,
+            'changes'         => $changes,
+        ], 200);
+    }
+
+    /**
+     * PUT /wu/v2/provision/:id/capabilities — Override capabilities.
+     */
+    public function handle_capabilities(WP_REST_Request $request): WP_REST_Response {
+        $op = $this->find_operation($request);
+        if (is_wp_error($op)) return new WP_REST_Response($op->get_error_data(), 404);
+
+        $body    = $request->get_json_params();
+        $site_id = (int) $op->site_id;
+        if (! $site_id) return new WP_REST_Response(['code' => 'no_site', 'message' => 'No site.'], 400);
+
+        $caps    = $body['capabilities'] ?? [];
+        $changes = Profile_Reconciler::reconcile_capabilities($site_id, $caps);
+
+        return new WP_REST_Response(['changes' => $changes], 200);
+    }
+
+    /**
+     * PUT /wu/v2/provision/:id/plugins — Direct plugin reconciliation (support only).
+     */
+    public function handle_plugins(WP_REST_Request $request): WP_REST_Response {
+        $op = $this->find_operation($request);
+        if (is_wp_error($op)) return new WP_REST_Response($op->get_error_data(), 404);
+
+        $body    = $request->get_json_params();
+        $site_id = (int) $op->site_id;
+        if (! $site_id) return new WP_REST_Response(['code' => 'no_site', 'message' => 'No site.'], 400);
+
+        $desired = $body['desired_plugins'] ?? $body['activate'] ?? [];
+        $changes = Profile_Reconciler::reconcile_plugins($site_id, $desired);
+
+        return new WP_REST_Response(['changes' => $changes], 200);
+    }
+
+    /**
+     * PUT /wu/v2/provision/:id/state — Set operational state.
+     */
+    public function handle_state(WP_REST_Request $request): WP_REST_Response {
+        $op = $this->find_operation($request);
+        if (is_wp_error($op)) return new WP_REST_Response($op->get_error_data(), 404);
+
+        $body  = $request->get_json_params();
+        $state = $body['state'] ?? '';
+
+        $allowed = [self::STATUS_ACTIVE, self::STATUS_SUSPENDED, self::STATUS_ARCHIVED, self::STATUS_PURGED];
+        if (! in_array($state, $allowed, true)) {
+            return new WP_REST_Response([
+                'code'    => 'invalid_state',
+                'message' => "Invalid state: {$state}. Allowed: " . implode(', ', $allowed),
+            ], 400);
+        }
+
+        $site_id = (int) $op->site_id;
+
+        if ($site_id) {
+            switch ($state) {
+                case self::STATUS_SUSPENDED:
+                    update_blog_option($site_id, 'sharehaus_suspended', true);
+                    // WordPress doesn't have a native "suspend" — archive as approach
+                    update_blog_status($site_id, 'archived', '1');
+                    break;
+                case self::STATUS_ACTIVE:
+                    update_blog_option($site_id, 'sharehaus_suspended', false);
+                    update_blog_status($site_id, 'archived', '0');
+                    update_blog_status($site_id, 'deleted', '0');
+                    break;
+                case self::STATUS_PURGED:
+                    if (function_exists('wp_delete_site')) {
+                        wp_delete_site($site_id);
+                    }
+                    break;
+            }
+        }
+
+        Provisioning_Table::update((int) $op->provision_id, ['status' => $state]);
+
+        return new WP_REST_Response([
+            'provision_id' => (int) $op->provision_id,
+            'status'       => $state,
+            'site_id'      => $site_id,
+            'reason'       => $body['reason'] ?? 'studio_instruction',
+        ], 200);
+    }
+
+    /**
+     * PUT /wu/v2/provision/:id/domain — Assign domain.
+     */
+    public function handle_domain(WP_REST_Request $request): WP_REST_Response {
+        $op = $this->find_operation($request);
+        if (is_wp_error($op)) return new WP_REST_Response($op->get_error_data(), 404);
+
+        $body    = $request->get_json_params();
+        $domain  = sanitize_text_field($body['domain'] ?? '');
+        $site_id = (int) $op->site_id;
+
+        if (! $site_id || ! $domain) {
+            return new WP_REST_Response(['code' => 'missing', 'message' => 'site_id and domain required'], 400);
+        }
+
+        // Use UM's domain mapping if available, else fallback
+        if (function_exists('wu_set_site_domain')) {
+            wu_set_site_domain($site_id, $domain);
+        } else {
+            update_blog_option($site_id, 'siteurl', "https://{$domain}");
+            update_blog_option($site_id, 'home', "https://{$domain}");
+        }
+
+        return new WP_REST_Response([
+            'site_id' => $site_id,
+            'domain'  => $domain,
+            'status'  => 'updated',
+        ], 200);
+    }
+
+    /**
+     * POST /wu/v2/provision/:id/archive — Archive site (recoverable).
+     */
+    public function handle_archive(WP_REST_Request $request): WP_REST_Response {
+        $op = $this->find_operation($request);
+        if (is_wp_error($op)) return new WP_REST_Response($op->get_error_data(), 404);
+
+        $site_id = (int) $op->site_id;
+        if ($site_id) {
+            update_blog_status($site_id, 'archived', '1');
+            update_blog_option($site_id, 'sharehaus_archived_at', current_time('mysql'));
+        }
+
+        Provisioning_Table::update((int) $op->provision_id, ['status' => self::STATUS_ARCHIVED]);
+
+        return new WP_REST_Response([
+            'provision_id' => (int) $op->provision_id,
+            'status'       => self::STATUS_ARCHIVED,
+            'site_id'      => $site_id,
+            'recoverable'  => true,
+        ], 200);
+    }
+
+    /**
+     * POST /wu/v2/provision/:id/restore — Restore from archive.
+     */
+    public function handle_restore(WP_REST_Request $request): WP_REST_Response {
+        $op = $this->find_operation($request);
+        if (is_wp_error($op)) return new WP_REST_Response($op->get_error_data(), 404);
+
+        $site_id = (int) $op->site_id;
+        if ($site_id) {
+            update_blog_status($site_id, 'archived', '0');
+            update_blog_option($site_id, 'sharehaus_suspended', false);
+        }
+
+        Provisioning_Table::update((int) $op->provision_id, ['status' => self::STATUS_ACTIVE]);
+
+        return new WP_REST_Response([
+            'provision_id' => (int) $op->provision_id,
+            'status'       => self::STATUS_ACTIVE,
+            'site_id'      => $site_id,
+        ], 200);
+    }
+
+    /**
+     * POST /wu/v2/provision/:id/purge — Permanent destruction.
+     */
+    public function handle_purge(WP_REST_Request $request): WP_REST_Response {
+        $op = $this->find_operation($request);
+        if (is_wp_error($op)) return new WP_REST_Response($op->get_error_data(), 404);
+
+        $site_id = (int) $op->site_id;
+        if ($site_id && function_exists('wpmu_delete_blog')) {
+            wpmu_delete_blog($site_id, true);
+        }
+
+        Provisioning_Table::update((int) $op->provision_id, [
+            'status'       => self::STATUS_PURGED,
+            'completed_at' => current_time('mysql'),
+        ]);
+
+        return new WP_REST_Response([
+            'provision_id' => (int) $op->provision_id,
+            'status'       => self::STATUS_PURGED,
+            'terminal'     => true,
+        ], 200);
+    }
+
+    /**
+     * GET /wu/v2/operational-profiles — List available profiles.
+     */
+    public function handle_list_profiles(WP_REST_Request $request): WP_REST_Response {
+        return new WP_REST_Response(Profile_Registry::list_available(), 200);
+    }
+
+    /**
+     * GET /wu/v2/templates — List available site templates.
+     */
+    public function handle_list_templates(WP_REST_Request $request): WP_REST_Response {
+        // Use UM's Site model to fetch templates
+        if (method_exists('\WP_Ultimo\Models\Site', 'get_all_by_type')) {
+            $templates = \WP_Ultimo\Models\Site::get_all_by_type('template');
+            $result = [];
+            foreach ($templates as $tpl) {
+                $result[] = [
+                    'id'          => $tpl->get_id(),
+                    'title'       => $tpl->get_title(),
+                    'description' => $tpl->get_description(),
+                    'categories'  => $tpl->get_categories(),
+                ];
+            }
+            return new WP_REST_Response($result, 200);
+        }
+
+        return new WP_REST_Response([], 200);
+    }
+
+    /**
+     * Helper: find a provisioning operation by provision_id URL param.
+     */
+    private function find_operation(WP_REST_Request $request) {
+        $op_id = (int) $request->get_param('id');
+        $op    = Provisioning_Table::get($op_id);
+
+        if (! $op) {
+            return new \WP_Error('not_found', 'Provisioning operation not found.', [
+                'status' => 404,
+                'code'   => 'not_found',
+                'message' => 'Provisioning operation not found.',
+            ]);
+        }
+
+        return $op;
     }
 }
