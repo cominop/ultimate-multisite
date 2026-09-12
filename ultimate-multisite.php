@@ -153,6 +153,8 @@ add_action('plugins_loaded', function () {
     require_once $dir . 'class-provisioning-table.php';
     require_once $dir . 'class-profile-registry.php';
     require_once $dir . 'class-profile-reconciler.php';
+    require_once $dir . 'class-divi-brand-adapter.php';
+    require_once $dir . 'class-brand-pusher.php';
     require_once $dir . 'class-provision-endpoint.php';
     require_once $dir . 'class-bootstrap.php';
 

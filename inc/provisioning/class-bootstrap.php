@@ -30,6 +30,9 @@ class Bootstrap {
 
         // Hook into site save to catch the site ID after creation
         add_action('wu_site_post_save', [$this, 'on_site_saved'], 10, 3);
+
+        // Apply brand data during site publication (after template + plugins)
+        add_action('wu_pending_site_published', ['\Sharehaus\Provisioning\Brand_Pusher', 'push_from_site'], 50, 2);
     }
 
     /**
