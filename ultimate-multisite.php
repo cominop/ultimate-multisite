@@ -145,4 +145,21 @@ if ( ! function_exists('WP_Ultimo')) {
 }
 // Initialize and set to global for back-compat
 $GLOBALS['WP_Ultimo'] = WP_Ultimo();
+
+// -- Sharehaus Provisioning Engine --
+add_action('plugins_loaded', function () {
+    // Ensure provisioning classes are loaded (classmap autoload may need regeneration)
+    $dir = __DIR__ . '/inc/provisioning/';
+    require_once $dir . 'class-provisioning-table.php';
+    require_once $dir . 'class-provision-endpoint.php';
+    require_once $dir . 'class-bootstrap.php';
+
+    if (class_exists('\\WP_Ultimo\\API')) {
+        \\Sharehaus\\Provisioning\\Bootstrap::get_instance()->init();
+        if (function_exists('register_activation_hook')) {
+            register_activation_hook(WP_ULTIMO_PLUGIN_FILE, ['\\Sharehaus\\Provisioning\\Provisioning_Table', 'install']);
+        }
+    }
+}, 20);
+
 // End of ultimate-multisite.php
