@@ -11,21 +11,21 @@
  * @since 1.0.0
  */
 
-namespace Sharehaus\\Provisioning;
+namespace Sharehaus\Provisioning;
 
 use WP_REST_Request;
 use WP_REST_Response;
-use WP_Ultimo\\Models\\Site;
-use WP_Ultimo\\Models\\Membership;
-use WP_Ultimo\\Models\\Customer;
-use WP_Ultimo\\Database\\Sites\\Site_Type;
-use WP_Ultimo\\Database\\Memberships\\Membership_Status;
+use WP_Ultimo\Models\Site;
+use WP_Ultimo\Models\Membership;
+use WP_Ultimo\Models\Customer;
+use WP_Ultimo\Database\Sites\Site_Type;
+use WP_Ultimo\Database\Memberships\Membership_Status;
 
 defined('ABSPATH') || exit;
 
 class Provision_Endpoint {
 
-    use \\WP_Ultimo\\Traits\\Singleton;
+    use WP_Ultimo\Traits\Singleton;
 
     /** Allowed provisioning states */
     const STATUS_ACCEPTED    = 'accepted';
@@ -52,15 +52,15 @@ class Provision_Endpoint {
 
         // POST /wu/v2/provision
         register_rest_route($namespace, '/provision', [
-            'methods'             => \\WP_REST_Server::CREATABLE,
+            'methods'             => \WP_REST_Server::CREATABLE,
             'callback'            => [$this, 'handle_provision'],
             'permission_callback' => [$this, 'check_api_key'],
             'args'                => $this->get_provision_args(),
         ]);
 
         // GET /wu/v2/provision/:id
-        register_rest_route($namespace, '/provision/(?P<id>\\d+)', [
-            'methods'             => \\WP_REST_Server::READABLE,
+        register_rest_route($namespace, '/provision/(?P<id>\d+)', [
+            'methods'             => \WP_REST_Server::READABLE,
             'callback'            => [$this, 'handle_status'],
             'permission_callback' => [$this, 'check_api_key'],
         ]);
@@ -82,7 +82,7 @@ class Provision_Endpoint {
         }
 
         // 2. Fall back to existing UM Basic Auth
-        $api = \\WP_Ultimo\\API::get_instance();
+        $api = \WP_Ultimo\API::get_instance();
         return $api->check_authorization($request);
     }
 

@@ -6,7 +6,7 @@
  * @since 1.0.0
  */
 
-namespace Sharehaus\\Provisioning;
+namespace Sharehaus\Provisioning;
 
 defined('ABSPATH') || exit;
 

@@ -9,13 +9,13 @@
  * @since 1.0.0
  */
 
-namespace Sharehaus\\Provisioning;
+namespace Sharehaus\Provisioning;
 
 defined('ABSPATH') || exit;
 
 class Bootstrap {
 
-    use \\WP_Ultimo\\Traits\\Singleton;
+    use \WP_Ultimo\Traits\Singleton;
 
     /**
      * Init hooks.
