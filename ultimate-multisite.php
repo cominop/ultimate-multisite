@@ -157,12 +157,14 @@ add_action('plugins_loaded', function () {
     require_once $dir . 'class-brand-pusher.php';
     require_once $dir . 'class-provision-endpoint.php';
     require_once $dir . 'class-bootstrap.php';
+    require_once $dir . 'class-compatibility-fixes.php';
 
     if (class_exists('\WP_Ultimo\API')) {
-        \Sharehaus\Provisioning\Bootstrap::get_instance()->init();
-        if (function_exists('register_activation_hook')) {
-            register_activation_hook(WP_ULTIMO_PLUGIN_FILE, ['\Sharehaus\Provisioning\Provisioning_Table', 'install']);
-        }
+            \Sharehaus\Provisioning\Bootstrap::get_instance()->init();
+            \Sharehaus\Provisioning\Compatibility_Fixes::run();
+            if (function_exists('register_activation_hook')) {
+                register_activation_hook(WP_ULTIMO_PLUGIN_FILE, ['\Sharehaus\Provisioning\Provisioning_Table', 'install']);
+            }
     }
 }, 20);
 
