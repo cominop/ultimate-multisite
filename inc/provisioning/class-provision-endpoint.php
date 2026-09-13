@@ -611,6 +611,29 @@ class Provision_Endpoint {
         $op = $this->find_operation($request);
         if (is_wp_error($op)) return new WP_REST_Response($op->get_error_data(), 404);
 
+        $body = $request->get_json_params();
+
+        // Require confirmation and reason for audit trail
+        $confirmed = ! empty($body['confirmed']);
+        $reason    = sanitize_text_field($body['reason'] ?? '');
+        $purged_by = sanitize_text_field($body['purged_by'] ?? 'studio');
+
+        if (! $confirmed || empty($reason)) {
+            return new WP_REST_Response([
+                'code'    => 'purge_requires_confirmation',
+                'message' => 'Purge requires confirmed: true and a reason for the audit log.',
+            ], 400);
+        }
+
+        // Build audit entry
+        $audit_entry = sprintf(
+            "[%s] PURGED by %s — reason: %s — command: %s",
+            current_time('mysql'),
+            $purged_by,
+            $reason,
+            $request->get_param('id')
+        );
+
         $site_id = (int) $op->site_id;
         if ($site_id && function_exists('wpmu_delete_blog')) {
             wpmu_delete_blog($site_id, true);
@@ -619,12 +642,14 @@ class Provision_Endpoint {
         Provisioning_Table::update((int) $op->provision_id, [
             'status'       => self::STATUS_PURGED,
             'completed_at' => current_time('mysql'),
+            'last_error'   => $audit_entry,
         ]);
 
         return new WP_REST_Response([
             'provision_id' => (int) $op->provision_id,
             'status'       => self::STATUS_PURGED,
             'terminal'     => true,
+            'audited'      => true,
         ], 200);
     }
 
