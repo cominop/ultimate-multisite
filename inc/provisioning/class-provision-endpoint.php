@@ -537,26 +537,46 @@ class Provision_Endpoint {
         if (is_wp_error($op)) return new WP_REST_Response($op->get_error_data(), 404);
 
         $body    = $request->get_json_params();
-        $domain  = sanitize_text_field($body['domain'] ?? '');
-        $site_id = (int) $op->site_id;
+                $domain  = sanitize_text_field($body['domain'] ?? '');
+                $site_id = (int) $op->site_id;
+                $cf      = ! empty($body['cloudflare']);
 
-        if (! $site_id || ! $domain) {
-            return new WP_REST_Response(['code' => 'missing', 'message' => 'site_id and domain required'], 400);
-        }
+                if (! $site_id || ! $domain) {
+                    return new WP_REST_Response(['code' => 'missing', 'message' => 'site_id and domain required'], 400);
+                }
 
-        // Use UM's domain mapping if available, else fallback
-        if (function_exists('wu_set_site_domain')) {
-            wu_set_site_domain($site_id, $domain);
-        } else {
-            update_blog_option($site_id, 'siteurl', "https://{$domain}");
-            update_blog_option($site_id, 'home', "https://{$domain}");
-        }
+                // 1. WordPress-level domain mapping
+                if (function_exists('wu_set_site_domain')) {
+                    wu_set_site_domain($site_id, $domain);
+                } else {
+                    update_blog_option($site_id, 'siteurl', "https://{$domain}");
+                    update_blog_option($site_id, 'home', "https://{$domain}");
+                }
 
-        return new WP_REST_Response([
-            'site_id' => $site_id,
-            'domain'  => $domain,
-            'status'  => 'updated',
-        ], 200);
+                // 2. Cloudflare DNS (optional — only if cloudflare flag is true and credentials exist)
+                $cf_result = null;
+                if ($cf) {
+                    $main_domain = wp_parse_url(network_site_url(), PHP_URL_HOST);
+                    $cf_result = Cloudflare_DNS::set_dns_record(
+                        $domain,
+                        $main_domain,
+                        'CNAME'
+                    );
+
+                    if (is_wp_error($cf_result)) {
+                        // Log but don't fail the whole operation — DNS can be fixed later
+                        Provisioning_Table::update((int) $op->provision_id, [
+                            'last_error'   => 'Cloudflare DNS: ' . $cf_result->get_error_message(),
+                        ]);
+                        $cf_result = null;
+                    }
+                }
+
+                return new WP_REST_Response([
+                    'provision_id'   => (int) $op->provision_id,
+                    'domain'         => $domain,
+                    'cloudflare_dns' => $cf_result !== null ? 'configured' : 'skipped',
+                ], 200);
     }
 
     /**
