@@ -65,7 +65,7 @@ if ( ! defined('WP_ULTIMO_PLUGIN_FILE')) {
 	define('WP_ULTIMO_PLUGIN_FILE', __FILE__);
 }
 if ( ! defined('WP_ULTIMO_VERSION')) {
-	define('WP_ULTIMO_VERSION', '2.16.1');
+	define('WP_ULTIMO_VERSION', '3.0.14');
 }
 if ( ! defined('MULTISITE_ULTIMATE_UPDATE_URL')) {
 	define('MULTISITE_ULTIMATE_UPDATE_URL', 'https://ultimatemultisite.com/');
