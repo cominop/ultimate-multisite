@@ -75,6 +75,7 @@ class Bootstrap {
 
     /**
      * Mark operation as active when site is fully published.
+     * First performs a health check to verify the site responds 200.
      */
     public function on_site_published($site, $membership): void {
         global $wpdb;
@@ -86,18 +87,64 @@ class Bootstrap {
         }
 
         $op = $wpdb->get_row($wpdb->prepare(
-            "SELECT provision_id FROM {$table}
+            "SELECT provision_id, site_id FROM {$table}
              WHERE membership_id = %d AND status = %s
              ORDER BY provision_id DESC LIMIT 1",
             $membership_id,
             self::STATUS_PROVISIONING
         ));
 
-        if ($op) {
+        if (! $op) {
+            return;
+        }
+
+        // ── Health check ──────────────────────────────────────
+        $site_id = (int) $op->site_id;
+        $healthy = false;
+        $error   = '';
+
+        if ($site_id) {
+            $site_url = get_site_url($site_id);
+
+            if (! empty($site_url)) {
+                $response = wp_remote_get($site_url, [
+                    'timeout'   => 10,
+                    'blocking'  => true,
+                    'sslverify' => false,
+                ]);
+
+                if (is_wp_error($response)) {
+                    $error = $response->get_error_message();
+                } elseif (wp_remote_retrieve_response_code($response) === 200) {
+                    $body = wp_remote_retrieve_body($response);
+                    // Verify the response looks like valid WordPress HTML
+                    if (str_contains($body, '<html') || str_contains($body, '<!DOCTYPE')) {
+                        $healthy = true;
+                    } else {
+                        $error = 'Site responded 200 but body is not valid HTML';
+                    }
+                } else {
+                    $code = wp_remote_retrieve_response_code($response);
+                    $error = "Site returned HTTP {$code}";
+                }
+            } else {
+                $error = 'Could not resolve site URL for site_id ' . $site_id;
+            }
+        } else {
+            $error = 'No site_id attached to operation';
+        }
+
+        if ($healthy) {
             Provisioning_Table::update((int) $op->provision_id, [
                 'status'       => self::STATUS_ACTIVE,
                 'current_step' => 'complete',
                 'completed_at' => current_time('mysql'),
+            ]);
+        } else {
+            Provisioning_Table::update((int) $op->provision_id, [
+                'status'       => self::STATUS_CLEANUP,
+                'current_step' => 'health_check_failed',
+                'last_error'   => $error,
             ]);
         }
     }

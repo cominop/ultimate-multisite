@@ -15,17 +15,17 @@ namespace Sharehaus\Provisioning;
 
 use WP_REST_Request;
 use WP_REST_Response;
-use WP_Ultimo\Models\Site;
-use WP_Ultimo\Models\Membership;
-use WP_Ultimo\Models\Customer;
-use WP_Ultimo\Database\Sites\Site_Type;
-use WP_Ultimo\Database\Memberships\Membership_Status;
+use \WP_Ultimo\Models\Site;
+use \WP_Ultimo\Models\Membership;
+use \WP_Ultimo\Models\Customer;
+use \WP_Ultimo\Database\Sites\Site_Type;
+use \WP_Ultimo\Database\Memberships\Membership_Status;
 
 defined('ABSPATH') || exit;
 
 class Provision_Endpoint {
 
-    use WP_Ultimo\Traits\Singleton;
+    use \WP_Ultimo\Traits\Singleton;
 
     /** Allowed provisioning states */
     const STATUS_ACCEPTED    = 'accepted';
@@ -146,7 +146,7 @@ class Provision_Endpoint {
         if ($api_key_header) {
             $stored_key = defined('SHAREHAUS_PROVISIONING_API_KEY')
                 ? SHAREHAUS_PROVISIONING_API_KEY
-                : wu_get_setting('sharehaus_provisioning_api_key', '');
+                : get_site_option('sharehaus_provisioning_api_key', '');
 
             return ! empty($stored_key) && hash_equals($stored_key, $api_key_header);
         }

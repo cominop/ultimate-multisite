@@ -148,23 +148,11 @@ $GLOBALS['WP_Ultimo'] = WP_Ultimo();
 
 // -- Sharehaus Provisioning Engine --
 add_action('plugins_loaded', function () {
-    // Ensure provisioning classes are loaded (classmap autoload may need regeneration)
-    $dir = __DIR__ . '/inc/provisioning/';
-    require_once $dir . 'class-provisioning-table.php';
-    require_once $dir . 'class-profile-registry.php';
-    require_once $dir . 'class-profile-reconciler.php';
-    require_once $dir . 'class-divi-brand-adapter.php';
-    require_once $dir . 'class-brand-pusher.php';
-    require_once $dir . 'class-provision-endpoint.php';
-    require_once $dir . 'class-bootstrap.php';
-    require_once $dir . 'class-compatibility-fixes.php';
-
     if (class_exists('\WP_Ultimo\API')) {
-            \Sharehaus\Provisioning\Bootstrap::get_instance()->init();
-            \Sharehaus\Provisioning\Compatibility_Fixes::run();
-            if (function_exists('register_activation_hook')) {
-                register_activation_hook(WP_ULTIMO_PLUGIN_FILE, ['\Sharehaus\Provisioning\Provisioning_Table', 'install']);
-            }
+        \Sharehaus\Provisioning\Bootstrap::get_instance()->init();
+        if (function_exists('register_activation_hook')) {
+            register_activation_hook(WP_ULTIMO_PLUGIN_FILE, ['\Sharehaus\Provisioning\Provisioning_Table', 'install']);
+        }
     }
 }, 20);
 
