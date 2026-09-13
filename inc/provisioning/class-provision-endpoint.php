@@ -121,6 +121,13 @@ class Provision_Endpoint {
             'permission_callback' => [$this, 'check_api_key'],
         ]);
 
+        // POST /wu/v2/provision/:id/retry — Retry a failed provision
+        register_rest_route($namespace, '/provision/(?P<id>\d+)/retry', [
+            'methods'             => \WP_REST_Server::CREATABLE,
+            'callback'            => [$this, 'handle_retry'],
+            'permission_callback' => [$this, 'check_api_key'],
+        ]);
+
         // GET /wu/v2/operational-profiles
         register_rest_route($namespace, '/operational-profiles', [
             'methods'             => \WP_REST_Server::READABLE,
@@ -678,6 +685,56 @@ class Provision_Endpoint {
      */
     public function handle_list_profiles(WP_REST_Request $request): WP_REST_Response {
         return new WP_REST_Response(Profile_Registry::list_available(), 200);
+    }
+
+    /**
+     * POST /wu/v2/provision/:id/retry — Retry a failed provisioning operation.
+     *
+     * Only works for operations in FAILED status. Resets to PROVISIONING,
+     * clears the error, and re-triggers the async pipeline.
+     */
+    public function handle_retry(WP_REST_Request $request): WP_REST_Response {
+        $op = $this->find_operation($request);
+        if (is_wp_error($op)) return new WP_REST_Response($op->get_error_data(), 404);
+
+        if ($op->status !== self::STATUS_FAILED) {
+            return new WP_REST_Response([
+                'code'    => 'not_failed',
+                'message' => 'Retry is only allowed for operations in FAILED status.',
+            ], 400);
+        }
+
+        // Reset operation to provisioning
+        Provisioning_Table::update((int) $op->provision_id, [
+            'status'       => self::STATUS_PROVISIONING,
+            'current_step' => 'retry_queued',
+            'last_error'   => null,
+        ]);
+
+        // Re-trigger the async pipeline
+        $membership_id = (int) $op->membership_id;
+        if ($membership_id) {
+            $membership = \WP_Ultimo\Models\Membership::get_by_id($membership_id);
+            if ($membership && method_exists($membership, 'publish_pending_site_async')) {
+                $membership->publish_pending_site_async();
+            }
+        }
+
+        // If the site was already created but the pipeline failed post-creation
+        // (e.g., brand push or health check), re-fire the publish hook
+        if ((int) $op->site_id) {
+            $site = \WP_Ultimo\Models\Site::get_by_id((int) $op->site_id);
+            $membership_obj = isset($membership) ? $membership : null;
+            if ($site && $membership_obj) {
+                do_action('wu_pending_site_published', $site, $membership_obj);
+            }
+        }
+
+        return new WP_REST_Response([
+            'provision_id' => (int) $op->provision_id,
+            'status'       => self::STATUS_PROVISIONING,
+            'message'      => 'Retry queued. Poll GET /provision/:id for status.',
+        ], 202);
     }
 
     /**
