@@ -16,8 +16,6 @@ use WP_Ultimo\Gateways\Base_Gateway;
 use WP_Ultimo\Gateways\Ignorable_Exception;
 
 use WP_Ultimo\Gateways\Free_Gateway;
-use WP_Ultimo\Gateways\Stripe_Gateway;
-use WP_Ultimo\Gateways\Stripe_Checkout_Gateway;
 use WP_Ultimo\Gateways\PayPal_Gateway;
 use WP_Ultimo\Gateways\PayPal_REST_Gateway;
 use WP_Ultimo\Gateways\PayPal_Webhook_Handler;
@@ -120,16 +118,6 @@ class Gateway_Manager extends Base_Manager {
 		 * Requires authentication — only logged-in users can poll.
 		 */
 		add_action('wp_ajax_wu_check_payment_status', [$this, 'ajax_check_payment_status']);
-
-		/*
-		 * Action Scheduler handler for payment verification fallback.
-		 */
-		add_action('wu_verify_stripe_payment', [$this, 'handle_scheduled_payment_verification']);
-
-		/*
-		 * Schedule payment verification after checkout.
-		 */
-		add_action('wu_checkout_done', [$this, 'maybe_schedule_payment_verification'], 10, 5);
 	}
 
 	/**
@@ -415,18 +403,6 @@ class Gateway_Manager extends Base_Manager {
 		wu_register_gateway('free', __('Free', 'ultimate-multisite'), '', Free_Gateway::class, true);
 
 		/*
-		 * Stripe Payments
-		 */
-		$stripe_desc = __('Accept payments in hundreds of currencies with many express checkout methods or local payment methods.', 'ultimate-multisite');
-		wu_register_gateway('stripe', __('Stripe (Recommended)', 'ultimate-multisite'), $stripe_desc, Stripe_Gateway::class);
-
-		/*
-		 * Stripe Checkout Payments
-		 */
-		$stripe_checkout_desc = __('Redirect to collect payment information on Stripe\'s Checkout page.', 'ultimate-multisite');
-		wu_register_gateway('stripe-checkout', __('Stripe Checkout', 'ultimate-multisite'), $stripe_checkout_desc, Stripe_Checkout_Gateway::class);
-
-		/*
 		 * PayPal Payments (REST API - Modern)
 		 */
 		$paypal_rest_desc = __('Modern PayPal integration with Connect with PayPal onboarding. Recommended for new setups.', 'ultimate-multisite');
@@ -692,117 +668,5 @@ class Gateway_Manager extends Base_Manager {
 				]
 			);
 		}
-	}
-
-	/**
-	 * Handle scheduled payment verification from Action Scheduler.
-	 *
-	 * @since 2.x.x
-	 *
-	 * @param int    $payment_id The payment ID to verify.
-	 * @param string $gateway_id The gateway ID.
-	 * @return void
-	 */
-	public function handle_scheduled_payment_verification($payment_id, $gateway_id = ''): void {
-
-		// Support both old (single arg) and new (array) formats
-		if (is_array($payment_id)) {
-			$gateway_id = $payment_id['gateway_id'] ?? '';
-			$payment_id = $payment_id['payment_id'] ?? 0;
-		}
-
-		if (empty($payment_id)) {
-			wu_log_add('stripe', 'Scheduled payment verification: No payment ID provided', LogLevel::WARNING);
-			return;
-		}
-
-		$payment = wu_get_payment($payment_id);
-
-		if (! $payment) {
-			wu_log_add('stripe', sprintf('Scheduled payment verification: Payment %d not found', $payment_id), LogLevel::WARNING);
-			return;
-		}
-
-		// Already completed - nothing to do
-		if ($payment->get_status() === \WP_Ultimo\Database\Payments\Payment_Status::COMPLETED) {
-			wu_log_add('stripe', sprintf('Scheduled payment verification: Payment %d already completed', $payment_id));
-			return;
-		}
-
-		// Determine gateway if not provided
-		if (empty($gateway_id)) {
-			$gateway_id = $payment->get_gateway();
-
-			if (empty($gateway_id)) {
-				$membership = $payment->get_membership();
-				$gateway_id = $membership ? $membership->get_gateway() : '';
-			}
-		}
-
-		if (! in_array($gateway_id, ['stripe', 'stripe-checkout'], true)) {
-			wu_log_add('stripe', sprintf('Scheduled payment verification: Payment %d is not a Stripe payment', $payment_id));
-			return;
-		}
-
-		$gateway = wu_get_gateway($gateway_id);
-
-		if (! $gateway || ! method_exists($gateway, 'verify_and_complete_payment')) {
-			wu_log_add('stripe', sprintf('Scheduled payment verification: Gateway %s not found or does not support verification', $gateway_id), LogLevel::WARNING);
-			return;
-		}
-
-		$result = $gateway->verify_and_complete_payment($payment_id);
-
-		if (! is_array($result)) {
-			wu_log_add('stripe', sprintf('Scheduled payment verification for payment %d: unexpected result type', $payment_id), LogLevel::WARNING);
-			return;
-		}
-
-		wu_log_add(
-			'stripe',
-			sprintf(
-				'Scheduled payment verification for payment %d: %s - %s',
-				$payment_id,
-				$result['success'] ? 'SUCCESS' : 'PENDING',
-				$result['message']
-			)
-		);
-	}
-
-	/**
-	 * Schedule payment verification after checkout for Stripe payments.
-	 *
-	 * @since 2.x.x
-	 *
-	 * @param \WP_Ultimo\Models\Payment    $payment The payment object.
-	 * @param \WP_Ultimo\Models\Membership $membership The membership object.
-	 * @param \WP_Ultimo\Models\Customer   $customer The customer object.
-	 * @param \WP_Ultimo\Checkout\Cart     $cart The cart object.
-	 * @param string                       $type The checkout type.
-	 * @return void
-	 */
-	public function maybe_schedule_payment_verification($payment, $membership, $customer, $cart, $type): void {
-
-		// Only schedule for pending payments with Stripe
-		if (! $payment || $payment->get_status() === \WP_Ultimo\Database\Payments\Payment_Status::COMPLETED) {
-			return;
-		}
-
-		$gateway_id = $membership ? $membership->get_gateway() : '';
-
-		if (! in_array($gateway_id, ['stripe', 'stripe-checkout'], true)) {
-			return;
-		}
-
-		$gateway = wu_get_gateway($gateway_id);
-
-		if (! $gateway || ! method_exists($gateway, 'schedule_payment_verification')) {
-			return;
-		}
-
-		// Schedule verification in 30 seconds
-		$gateway->schedule_payment_verification($payment->get_id(), 30);
-
-		wu_log_add('stripe', sprintf('Scheduled payment verification for payment %d in 30 seconds', $payment->get_id()));
 	}
 }
