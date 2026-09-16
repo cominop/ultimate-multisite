@@ -386,20 +386,6 @@ class Customer_Edit_Admin_Page extends Edit_Admin_Page {
 					'membership'
 				);
 			}
-
-			foreach ($customer->get_payments() as $payment) {
-
-				/**
-				 * Enqueue task
-				 */
-				wu_enqueue_async_action(
-					'wu_async_delete_payment',
-					[
-						'payment_id' => $payment->get_id(),
-					],
-					'payment'
-				);
-			}
 		} else {
 			$re_assignment_customer = wu_get_customer(wu_request('re_assignment_customer_id'));
 
@@ -416,21 +402,6 @@ class Customer_Edit_Admin_Page extends Edit_Admin_Page {
 							'target_customer_id' => $re_assignment_customer->get_id(),
 						],
 						'membership'
-					);
-				}
-
-				foreach ($customer->get_payments() as $payment) {
-
-					/**
-					 * Enqueue to the future
-					 */
-					wu_enqueue_async_action(
-						'wu_async_transfer_payment',
-						[
-							'payment_id'         => $payment->get_id(),
-							'target_customer_id' => $re_assignment_customer->get_id(),
-						],
-						'payment'
 					);
 				}
 			}

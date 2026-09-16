@@ -272,21 +272,6 @@ class Email_List_Admin_Page extends List_Admin_Page {
 			'payload' => $payload,
 		];
 
-		/*
-		 * Add the invoice attachment for test emails, matching the real email behavior.
-		 */
-		if (isset($payload['payment_id']) && wu_get_setting('attach_invoice_pdf', true)) {
-			$invoice_payment = wu_get_payment($payload['payment_id']);
-
-			if ( ! $invoice_payment) {
-				$invoice_payment = wu_mock_payment();
-			}
-
-			$file_name = 'invoice-' . $invoice_payment->get_hash() . '.pdf';
-
-			\WP_Ultimo\Managers\Email_Manager::get_instance()->attach_invoice_pdf($invoice_payment, $file_name, $args['subject']);
-		}
-
 		$mail_error = null;
 
 		$capture_error = function ($wp_error) use (&$mail_error) {

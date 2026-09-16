@@ -269,7 +269,6 @@ class Ajax implements \WP_Ultimo\Interfaces\Singleton {
 				'wu_get_domains',
 				'wu_get_sites',
 				'wu_get_memberships',
-				'wu_get_payments',
 				'wu_get_broadcasts',
 				'wu_get_checkout_forms',
 			]

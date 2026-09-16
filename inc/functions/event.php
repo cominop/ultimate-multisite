@@ -186,9 +186,6 @@ function wu_generate_event_payload($model_name, $model = false): array {
 			case 'membership':
 				$model = wu_mock_membership();
 				break;
-			case 'payment':
-				$model = wu_mock_payment();
-				break;
 			case 'site':
 				$model = wu_mock_site();
 				break;
@@ -257,31 +254,6 @@ function wu_generate_event_payload($model_name, $model = false): array {
 			'product_description'   => $payload['formatted_price'],
 			'product_image'         => $payload['image'],
 			'product_manage_url'    => wu_network_admin_url(
-				'wp-ultimo-edit-payment',
-				[
-					'id' => $model->get_id(),
-				]
-			),
-		];
-	} elseif ('payment' === $model_name) {
-		$payload = $model->to_search_results();
-
-		$payload = [
-			'payment_id'             => $payload['id'],
-			'payment_status'         => $payload['status'],
-			'payment_reference_code' => $payload['reference_code'],
-			'payment_subtotal'       => wu_format_currency($payload['subtotal'], $payload['currency']),
-			'payment_subtotal_raw'   => $payload['subtotal'],
-			'payment_tax_total'      => wu_format_currency($payload['tax_total'], $payload['currency']),
-			'payment_tax_total_raw'  => $payload['tax_total'],
-			'payment_total'          => wu_format_currency($payload['total'], $payload['currency']),
-			'payment_total_raw'      => $payload['total'],
-			'payment_currency'       => $payload['currency'],
-			'payment_product_names'  => $payload['product_names'],
-			'payment_date_created'   => $payload['date_created'],
-			'payment_gateway'        => $payload['gateway'],
-			'payment_invoice_url'    => $model->get_invoice_url(),
-			'payment_manage_url'     => wu_network_admin_url(
 				'wp-ultimo-edit-payment',
 				[
 					'id' => $model->get_id(),

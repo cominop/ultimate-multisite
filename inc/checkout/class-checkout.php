@@ -195,14 +195,6 @@ class Checkout {
 		 */
 		add_action('init', [$this, 'add_rewrite_rules'], 20);
 
-		// Schedule draft cleanup
-		if (! wp_next_scheduled('wu_cleanup_draft_payments')) {
-			wp_schedule_event(time(), 'daily', 'wu_cleanup_draft_payments');
-		}
-		add_action('wu_cleanup_draft_payments', [$this, 'cleanup_expired_drafts']);
-
-		add_action('init', [$this, 'handle_cancel_payment']);
-
 		add_filter('wu_request', [$this, 'get_checkout_from_query_vars'], 10, 2);
 
 		/*

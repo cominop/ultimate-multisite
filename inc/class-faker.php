@@ -295,30 +295,7 @@ class Faker {
 	}
 
 	/**
-	 * Get random payment.
-	 *
-	 * @since 2.0.0
-	 * @return object|false The payment object.
-	 */
-	private function get_random_payment() {
-
-		$faker = $this->get_faker();
-
-		$payment = $this->get_random_data('payments');
-
-		if ( ! $payment) {
-			return false;
-		}
-
-		if (is_object($payment)) {
-			return $payment;
-		} else {
-			return wu_get_payment($payment);
-		}
-	}
-
-	/**
-	 * Generate a faker customer.
+		 * Generate a faker customer.
 	 *
 	 * @since 2.0.0
 	 * @param int $number The number of fake data that will be generated.
@@ -760,10 +737,6 @@ class Faker {
 			'account_created',
 			'account_deleted',
 			'new_domain_mapping',
-			'payment_received',
-			'payment_successful',
-			'payment_failed',
-			'refund_issued',
 			'plan_change',
 		];
 
@@ -785,66 +758,6 @@ class Faker {
 				throw new Exception(esc_html($webhook->get_error_message()));
 			} else {
 				$this->set_fake_data_generated('webhooks', $webhook);
-			}
-		}
-	}
-
-	/**
-	 * Generate a fake payment.
-	 *
-	 * @since 2.0.0
-	 * @param int $number The number of fake data that will be generated.
-	 * @throws Exception In case of failures, an exception is thrown.
-	 */
-	public function generate_fake_payment($number = 1): void {
-
-		$faker          = $this->get_faker();
-		$type_options   = [
-			'percentage',
-			'absolute',
-		];
-		$status_options = [
-			'pending',
-			'completed',
-			'refunded',
-			'partially-refunded',
-			'partially-paid',
-			'failed',
-			'cancelled',
-		];
-
-		$type_options_percentage = $type_options[0];
-		$status_options_pending  = $status_options[0];
-		$memberships             = $this->get_fake_data_generated('memberships');
-
-		for ($i = 0; $i < $number; $i++) {
-			$membership = $this->get_random_membership();
-
-			$payment_data = [
-				'parent_id'          => 0,
-				'status'             => $faker->randomElement($status_options),
-				'customer_id'        => $membership ? $membership->get_customer_id() : false,
-				'membership_id'      => $membership ? $membership->get_id() : false,
-				'product_id'         => $membership ? $membership->get_plan_id() : false,
-				'currency'           => $membership ? $membership->get_currency() : false,
-				'tax'                => 0.00,
-				'credits'            => 0.00,
-				'fees'               => 0.00,
-				'discounts'          => 0.00,
-				'discount_code'      => '',
-				'gateway'            => '',
-				'gateway_payment_id' => '',
-				'date_created'       => $faker->dateTimeThisYear()->format('Y-m-d H:i:s'),
-			];
-
-			$payment = wu_create_payment($payment_data);
-
-			if (is_wp_error($payment)) {
-				throw new Exception(esc_html($payment->get_error_message()));
-			} else {
-				$payment->recalculate_totals()->save();
-
-				$this->set_fake_data_generated('payments', $payment);
 			}
 		}
 	}

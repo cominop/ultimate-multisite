@@ -21,7 +21,6 @@ use WP_Ultimo\UI\Template_Previewer;
 use WP_Ultimo\Models\Checkout_Form;
 use WP_Ultimo\Checkout\Legacy_Checkout;
 use WP_Ultimo\Database\Memberships\Membership_Status;
-use WP_Ultimo\Database\Payments\Payment_Status;
 use WP_Ultimo\Database\Sites\Site_Type;
 use WP_Ultimo\Managers\Domain_Manager;
 use WP_Ultimo\Managers\Limitation_Manager;

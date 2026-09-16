@@ -11,7 +11,6 @@ defined('ABSPATH') || exit;
 
 use WP_Ultimo\Models\Membership;
 use WP_Ultimo\Models\Payment;
-use WP_Ultimo\Database\Payments\Payment_Status;
 use WP_Ultimo\Checkout\Cart;
 
 /**

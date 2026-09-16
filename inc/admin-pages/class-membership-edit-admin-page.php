@@ -397,15 +397,6 @@ class Membership_Edit_Admin_Page extends Edit_Admin_Page {
 		);
 
 		$this->add_list_table_widget(
-			'payments',
-			[
-				'title'        => __('Payments', 'ultimate-multisite'),
-				'table'        => new \WP_Ultimo\List_Tables\Customers_Payment_List_Table(),
-				'query_filter' => [$this, 'payments_query_filter'],
-			]
-		);
-
-		$this->add_list_table_widget(
 			'sites',
 			[
 				'title'        => __('Sites', 'ultimate-multisite'),
@@ -1001,21 +992,6 @@ class Membership_Edit_Admin_Page extends Edit_Admin_Page {
 			'delete_button_label' => __('Delete Membership', 'ultimate-multisite'),
 			'delete_description'  => __('Be careful. This action is irreversible.', 'ultimate-multisite'),
 		];
-	}
-
-	/**
-	 * Filters the list table to return only relevant payments.
-	 *
-	 * @since 2.0.0
-	 *
-	 * @param array $args Query args passed to the list table.
-	 * @return array Modified query args.
-	 */
-	public function payments_query_filter($args) {
-
-		$args['membership_id'] = $this->get_object()->get_id();
-
-		return $args;
 	}
 
 	/**

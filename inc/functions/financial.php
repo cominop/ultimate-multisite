@@ -9,7 +9,6 @@
 // Exit if accessed directly
 defined('ABSPATH') || exit;
 
-use WP_Ultimo\Database\Payments\Payment_Status;
 use WP_Ultimo\Database\Memberships\Membership_Status;
 
 /**

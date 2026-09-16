@@ -372,29 +372,6 @@ class Event_Manager extends Base_Manager {
 	public function register_all_events(): void {
 
 		/**
-		 * Payment Received.
-		 */
-		wu_register_event_type(
-			'payment_received',
-			[
-				'name'            => __('Payment Received', 'ultimate-multisite'),
-				'desc'            => __('This event is fired every time a new payment is received, regardless of the payment status.', 'ultimate-multisite'),
-				'payload'         => fn() => array_merge(
-					wu_generate_event_payload('payment'),
-					wu_generate_event_payload('membership'),
-					wu_generate_event_payload('customer')
-				),
-				'deprecated_args' => [
-					'user_id' => 'customer_user_id',
-					'amount'  => 'payment_total',
-					'gateway' => 'payment_gateway',
-					'status'  => 'payment_status',
-					'date'    => 'payment_date_created',
-				],
-			]
-		);
-
-		/**
 		 * Site Published.
 		 */
 		wu_register_event_type(
@@ -450,65 +427,6 @@ class Event_Manager extends Base_Manager {
 					'user_site_url' => 'http://test.mynetwork.com/',
 					'network_ip'    => '125.399.3.23',
 				],
-			]
-		);
-
-		/**
-		 * Renewal payment created
-		 */
-		wu_register_event_type(
-			'renewal_payment_created',
-			[
-				'name'            => __('New Renewal Payment Created', 'ultimate-multisite'),
-				'desc'            => __('This event is fired every time a new renewal payment is created by Ultimate Multisite.', 'ultimate-multisite'),
-				'payload'         => fn() => array_merge(
-					[
-						'default_payment_url' => 'https://linktopayment.com',
-					],
-					wu_generate_event_payload('payment'),
-					wu_generate_event_payload('membership'),
-					wu_generate_event_payload('customer')
-				),
-				'deprecated_args' => [],
-			]
-		);
-
-		/**
-		 * Invoice Sent
-		 */
-		wu_register_event_type(
-			'invoice_sent',
-			[
-				'name'            => __('Invoice Sent', 'ultimate-multisite'),
-				'desc'            => __('This event is fired every time an invoice is sent to a customer by a network admin.', 'ultimate-multisite'),
-				'payload'         => fn() => array_merge(
-					[
-						'payment_url'     => 'https://linktopayment.com',
-						'invoice_message' => 'Example message to the customer.',
-					],
-					wu_generate_event_payload('payment'),
-					wu_generate_event_payload('customer')
-				),
-				'deprecated_args' => [],
-			]
-		);
-
-		/**
-		 * Payment Failed.
-		 */
-		wu_register_event_type(
-			'payment_failed',
-			[
-				'name'            => __('Recurring Payment Failed', 'ultimate-multisite'),
-				'desc'            => __('Fired when an auto-renewing payment fails (Stripe/PayPal).', 'ultimate-multisite'),
-				'payload'         => fn() => array_merge(
-					wu_generate_event_payload('membership'),
-					wu_generate_event_payload('customer'),
-					[
-						'payment_gateway' => 'stripe',
-					]
-				),
-				'deprecated_args' => [],
 			]
 		);
 

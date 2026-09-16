@@ -290,24 +290,6 @@ class Cron implements \WP_Ultimo\Interfaces\Singleton {
 
 			$saved = $membership->save();
 
-			$payment_url = add_query_arg(
-				[
-					'payment' => $new_payment->get_hash(),
-				],
-				wu_get_registration_url()
-			);
-
-			$payload = array_merge(
-				[
-					'default_payment_url' => $payment_url,
-				],
-				wu_generate_event_payload('payment', $new_payment),
-				wu_generate_event_payload('membership', $membership),
-				wu_generate_event_payload('customer', $membership->get_customer())
-			);
-
-			wu_do_event('renewal_payment_created', $payload);
-
 			return;
 		}
 	}

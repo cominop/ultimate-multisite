@@ -391,33 +391,6 @@ class Email_Manager extends Base_Manager {
 	 */
 	public function register_all_default_system_emails(): void {
 		/*
-		 * Checkout Completed - Admin
-		 */
-		$this->register_default_system_email(
-			[
-				'event'   => 'payment_received',
-				'slug'    => 'payment_received_admin',
-				'target'  => 'admin',
-				'title'   => '{{payment_email_admin_subject}}',
-				'content' => wu_get_template_contents('emails/admin/payment-received'),
-			]
-		);
-
-		/*
-		 * Checkout Completed - Customer
-		 */
-		$this->register_default_system_email(
-			[
-				'event'              => 'payment_received',
-				'slug'               => 'payment_received_customer',
-				'target'             => 'customer',
-				'title'              => '{{payment_email_customer_subject}}',
-				'content'            => wu_get_template_contents('emails/customer/payment-received'),
-				'send_copy_to_admin' => false,
-			]
-		);
-
-		/*
 		 * Site Published - Admin
 		 */
 		$this->register_default_system_email(
@@ -466,45 +439,6 @@ class Email_Manager extends Base_Manager {
 				'slug'    => 'domain_created_admin',
 				'title'   => __('A new domain was added to your Network!', 'ultimate-multisite'),
 				'content' => wu_get_template_contents('emails/admin/domain-created'),
-			]
-		);
-
-		/*
-		 * Pending Renewal Payment Created - Customer
-		 */
-		$this->register_default_system_email(
-			[
-				'event'   => 'renewal_payment_created',
-				'target'  => 'customer',
-				'slug'    => 'renewal_payment_created',
-				'title'   => __('You have a new pending payment!', 'ultimate-multisite'),
-				'content' => wu_get_template_contents('emails/customer/renewal-payment-created'),
-			]
-		);
-
-		/*
-		 * Payment Failed - Customer
-		 */
-		$this->register_default_system_email(
-			[
-				'event'   => 'payment_failed',
-				'slug'    => 'payment_failed_customer',
-				'target'  => 'customer',
-				'title'   => __('Your payment could not be processed', 'ultimate-multisite'),
-				'content' => wu_get_template_contents('emails/customer/payment-failed'),
-			]
-		);
-
-		/*
-		 * Payment Failed - Admin
-		 */
-		$this->register_default_system_email(
-			[
-				'event'   => 'payment_failed',
-				'slug'    => 'payment_failed_admin',
-				'target'  => 'admin',
-				'title'   => __('A recurring payment has failed!', 'ultimate-multisite'),
-				'content' => wu_get_template_contents('emails/admin/payment-failed'),
 			]
 		);
 

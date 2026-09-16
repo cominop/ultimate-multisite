@@ -122,22 +122,6 @@ class Table_Loader {
 	public $membershipmeta_table;
 
 	/**
-	 * The Payments Table
-	 *
-	 * @since 2.2.0
-	 * @var \WP_Ultimo\Database\Payments\Payments_Table
-	 */
-	public $payment_table;
-
-	/**
-	 * The Payments Meta Table
-	 *
-	 * @since 2.2.0
-	 * @var \WP_Ultimo\Database\Payments\Payments_Meta_Table
-	 */
-	public $paymentmeta_table;
-
-	/**
 	 * The Posts Table
 	 *
 	 * @since 2.2.0
@@ -251,12 +235,6 @@ class Table_Loader {
 		 */
 		$this->membership_table     = new \WP_Ultimo\Database\Memberships\Memberships_Table();
 		$this->membershipmeta_table = new \WP_Ultimo\Database\Memberships\Memberships_Meta_Table();
-
-		/**
-		 * Loads the Payments Table
-		 */
-		$this->payment_table     = new \WP_Ultimo\Database\Payments\Payments_Table();
-		$this->paymentmeta_table = new \WP_Ultimo\Database\Payments\Payments_Meta_Table();
 
 		/**
 		 * Loads the Posts (and Meta) Tables
