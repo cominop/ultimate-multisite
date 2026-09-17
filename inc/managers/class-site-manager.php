@@ -1419,7 +1419,7 @@ class Site_Manager extends Base_Manager {
 				continue;
 			}
 
-			if ($membership->is_active() || $membership->is_trialing()) {
+			if ($membership->is_active()) {
 
 				// Check if the last modify has more than some time, to avoid the deletion of sites on creation process
 				if ($membership->get_date_modified() < $one_day_ago) {

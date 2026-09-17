@@ -269,13 +269,7 @@ class Customer_Manager extends Base_Manager {
 			if ($membership->get_status() === Membership_Status::PENDING) {
 				$membership->publish_pending_site_async();
 
-				if ($membership->get_date_trial_end() <= gmdate('Y-m-d 23:59:59')) {
-					$membership->set_status(Membership_Status::ACTIVE);
-				}
-
 				$membership->save();
-			} elseif ($membership->get_status() === Membership_Status::TRIALING) {
-				$membership->publish_pending_site_async();
 			} elseif ($membership->get_status() === Membership_Status::ACTIVE) {
 				/*
 				 * Membership was activated (e.g. by the payment gateway) before
