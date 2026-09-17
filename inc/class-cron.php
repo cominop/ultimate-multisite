@@ -54,8 +54,6 @@ class Cron implements \WP_Ultimo\Interfaces\Singleton {
 
 		add_action('wu_membership_check', [$this, 'membership_renewal_check'], 10);
 
-		add_action('wu_membership_check', [$this, 'membership_trial_check'], 10);
-
 		add_action('wu_async_create_renewal_payment', [$this, 'async_create_renewal_payment'], 10, 2);
 
 		/*
@@ -202,50 +200,6 @@ class Cron implements \WP_Ultimo\Interfaces\Singleton {
 				'wu_async_create_renewal_payment',
 				[
 					'membership_id' => $membership->get_id(),
-				],
-				'wu_cron_check'
-			);
-		}
-	}
-
-	/**
-	 * Checks if trialing memberships need work.
-	 *
-	 * This creates pending payments, emails the link to pay
-	 * and marks the membership as on-hold.
-	 *
-	 * @since 2.0.0
-	 * @return void
-	 */
-	public function membership_trial_check(): void {
-
-		$query_params = apply_filters(
-			'wu_membership_trial_check_query_params',
-			[
-				'auto_renew' => false,
-				'status__in' => [
-					Membership_Status::TRIALING,
-				],
-				'date_query' => [
-					'column'    => 'date_trial_end',
-					'before'    => '-3 hours',
-					'inclusive' => true,
-				],
-			]
-		);
-
-		$memberships = wu_get_memberships($query_params);
-
-		/*
-		 * Loop our memberships, triggering
-		 * a new async call for each one.
-		 */
-		foreach ($memberships as $membership) {
-			wu_enqueue_async_action(
-				'wu_async_create_renewal_payment',
-				[
-					'membership_id' => $membership->get_id(),
-					'trial'         => true,
 				],
 				'wu_cron_check'
 			);
