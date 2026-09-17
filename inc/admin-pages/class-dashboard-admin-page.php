@@ -168,8 +168,6 @@ class Dashboard_Admin_Page extends Base_Admin_Page {
 				'active_tab'      => $this->tab,
 				'views'           => $this->get_views(),
 			];
-
-			wu_get_template('dashboard-statistics/filter', $args);
 		}
 	}
 
@@ -290,11 +288,7 @@ class Dashboard_Admin_Page extends Base_Admin_Page {
 	 */
 	public function register_general_tab_widgets($tab, $screen): void {
 
-		if (current_user_can('wu_read_financial')) {
-			add_meta_box('wp-ultimo-mrr-growth', __('Monthly Recurring Revenue Growth', 'ultimate-multisite'), [$this, 'output_widget_mrr_growth'], $screen->id, 'full', 'high');
-
-			add_meta_box('wp-ultimo-revenue', __('Revenue', 'ultimate-multisite'), [$this, 'output_widget_revenues'], $screen->id, 'normal', 'high');
-		}
+		add_meta_box('wp-ultimo-sites-overview', __('Sites Overview', 'ultimate-multisite'), [$this, 'output_widget_sites_overview'], $screen->id, 'full', 'high');
 
 		add_meta_box('wp-ultimo-countries', __('Signups by Countries', 'ultimate-multisite'), [$this, 'output_widget_countries'], $screen->id, 'side', 'high');
 
@@ -659,5 +653,32 @@ class Dashboard_Admin_Page extends Base_Admin_Page {
 			esc_attr($data_strings),
 			esc_attr($args['action'])
 		);
+	}
+
+	/**
+	 * Output the Sites Overview widget on the dashboard.
+	 *
+	 * Reuses the Site_List_Table with time-range and plan-type filters.
+	 *
+	 * @since 2.0.0
+	 * @return void
+	 */
+	public function output_widget_sites_overview(): void {
+
+		echo '<style>
+			#wp-ultimo-wrap #post-body .postbox-container { padding-right: 24px !important; }
+			#wp-ultimo-wrap .meta-box-sortables { padding-right: 24px !important; }
+			#wp-ultimo-wrap .postbox .inside { max-width: 100%; overflow-x: auto; }
+		</style>';
+
+		$site_list_table = new \WP_Ultimo\List_Tables\Site_List_Table();
+
+		$site_list_table->prepare_items();
+
+		echo '<div class="wu-overflow-auto">';
+
+		$site_list_table->display();
+
+		echo '</div>';
 	}
 }
