@@ -108,18 +108,6 @@ class Top_Admin_Nav_Menu {
 			],
 		];
 
-		// Payments
-		$payments = [
-			'id'     => 'wp-ultimo-payments',
-			'parent' => 'wp-ultimo',
-			'title'  => __('Payments', 'ultimate-multisite'),
-			'href'   => network_admin_url('admin.php?page=wp-ultimo-payments'),
-			'meta'   => [
-				'class' => 'wp-ultimo-top-menu',
-				'title' => __('Go to the payments page', 'ultimate-multisite'),
-			],
-		];
-
 		// Discount Codes
 		$discount_codes = [
 			'id'     => 'wp-ultimo-discount-codes',
@@ -187,10 +175,6 @@ class Top_Admin_Nav_Menu {
 
 		if (current_user_can('wu_read_products')) {
 			$wp_admin_bar->add_node($products);
-		}
-
-		if (current_user_can('wu_read_payments')) {
-			$wp_admin_bar->add_node($payments);
 		}
 
 		if (current_user_can('wu_read_discount_codes')) {
