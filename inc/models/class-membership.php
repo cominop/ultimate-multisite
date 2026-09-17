@@ -178,14 +178,6 @@ class Membership extends Base_Model implements Limitable, Billable, Notable {
 	protected $date_activated;
 
 	/**
-	 * Date of the end of the trial period.
-	 *
-	 * @since 2.0.0
-	 * @var string
-	 */
-	protected $date_trial_end;
-
-	/**
 	 * Date of the next renewal.
 	 *
 	 * @since 2.0.0
@@ -1189,29 +1181,6 @@ class Membership extends Base_Model implements Limitable, Billable, Notable {
 	public function set_date_activated($date_activated): void {
 
 		$this->date_activated = $date_activated;
-	}
-
-	/**
-	 * Get the value of date_trial_end.
-	 *
-	 * @since 2.0.0
-	 * @return string
-	 */
-	public function get_date_trial_end() {
-
-		return $this->date_trial_end;
-	}
-
-	/**
-	 * Set the value of date_trial_end.
-	 *
-	 * @since 2.0.0
-	 * @param string $date_trial_end Date when the trial period ends, if this membership has or had a trial period.
-	 * @return void
-	 */
-	public function set_date_trial_end($date_trial_end): void {
-
-		$this->date_trial_end = $date_trial_end;
 	}
 
 	/**
@@ -3014,17 +2983,6 @@ class Membership extends Base_Model implements Limitable, Billable, Notable {
 	public function has_remaining_sites() {
 
 		return $this->get_remaining_sites() >= 1;
-	}
-
-	/**
-	 * Checks if the current membership is current trialing.
-	 *
-	 * @since 2.0.18
-	 * @return boolean
-	 */
-	public function is_trialing() {
-
-		return $this->get_date_trial_end() > gmdate('Y-m-d 23:59:59');
 	}
 
 	/**

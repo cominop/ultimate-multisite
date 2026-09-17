@@ -164,27 +164,6 @@ class Product extends Base_Model implements Limitable {
 	protected $recurring = 1;
 
 	/**
-	 * Duration of the trial period.
-	 *
-	 * @since 2.0.0
-	 * @var int
-	 */
-	protected $trial_duration = 0;
-
-	/**
-	 * Unit of the trial period duration.
-	 *
-	 * - day
-	 * - week
-	 * - month
-	 * - year
-	 *
-	 * @since 2.0.0
-	 * @var string
-	 */
-	protected $trial_duration_unit = 'day';
-
-	/**
 	 * Time interval between charges.
 	 *
 	 * @since 2.0.0
@@ -631,64 +610,6 @@ class Product extends Base_Model implements Limitable {
 
 		// For PWYW, we don't force amount to 0 - it uses suggested_amount as default
 		// and recurring is determined by pwyw_recurring_mode
-	}
-
-	/**
-	 * Checks if a given product offers a trial period.
-	 *
-	 * @since 2.0.0
-	 * @return boolean
-	 */
-	public function has_trial() {
-
-		return $this->get_trial_duration() > 0;
-	}
-
-	/**
-	 * Get duration of the trial.
-	 *
-	 * @since 2.0.0
-	 * @return int
-	 */
-	public function get_trial_duration() {
-
-		return $this->trial_duration;
-	}
-
-	/**
-	 * Set duration of the trial.
-	 *
-	 * @since 2.0.0
-	 * @param int $trial_duration The duration of the trial period of this product, if the product has one.
-	 * @return void
-	 */
-	public function set_trial_duration($trial_duration): void {
-
-		$this->trial_duration = $trial_duration;
-	}
-
-	/**
-	 * Get the trial duration unit.
-	 *
-	 * @since 2.0.0
-	 * @return string
-	 */
-	public function get_trial_duration_unit() {
-
-		return $this->trial_duration_unit;
-	}
-
-	/**
-	 * Set the trial duration unit.
-	 *
-	 * @since 2.0.0
-	 * @param string $trial_duration_unit The unit of the trial duration amount. Can be day, week, month or year.
-	 * @options day,week,month,year
-	 * @return void
-	 */
-	public function set_trial_duration_unit($trial_duration_unit): void {
-
-		$this->trial_duration_unit = $trial_duration_unit;
 	}
 
 	/**
