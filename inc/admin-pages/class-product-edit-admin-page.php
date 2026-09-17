@@ -276,7 +276,6 @@ class Product_Edit_Admin_Page extends Edit_Admin_Page {
 						[
 							'is_recurring'        => $this->get_object()->is_recurring(),
 							'pricing_type'        => $this->get_object()->get_pricing_type(),
-							'has_trial'           => $this->get_object()->get_trial_duration() > 0,
 							'has_setup_fee'       => $this->get_object()->has_setup_fee(),
 							'setup_fee'           => $this->get_object()->get_setup_fee(),
 							'amount'              => $this->get_object()->get_amount(),
@@ -504,48 +503,6 @@ class Product_Edit_Admin_Page extends Edit_Admin_Page {
 						'wrapper_html_attr' => [
 							'v-show'  => "is_recurring && pricing_type == 'paid'",
 							'v-cloak' => '1',
-						],
-					],
-					'has_trial'             => [
-						'type'              => 'toggle',
-						'title'             => __('Offer Trial', 'ultimate-multisite'),
-						'desc'              => __('Check if you want to add a trial period to this product.', 'ultimate-multisite'),
-						'value'             => $this->get_object()->has_trial(),
-						'wrapper_html_attr' => [
-							'v-show'  => "pricing_type == 'paid'",
-							'v-cloak' => '1',
-						],
-						'html_attr'         => [
-							'v-model' => 'has_trial',
-						],
-					],
-					'trial_group'           => [
-						'type'              => 'group',
-						'title'             => __('Trial', 'ultimate-multisite'),
-						'tooltip'           => '',
-						'wrapper_html_attr' => [
-							'v-show'  => "has_trial && pricing_type == 'paid'",
-							'v-cloak' => '1',
-						],
-						'fields'            => [
-							'trial_duration'      => [
-								'type'            => 'number',
-								'value'           => $this->get_object()->get_trial_duration(),
-								'placeholder'     => '',
-								'wrapper_classes' => 'wu-mr-2 wu-w-1/3',
-							],
-							'trial_duration_unit' => [
-								'type'            => 'select',
-								'value'           => $this->get_object()->get_trial_duration_unit(),
-								'placeholder'     => '',
-								'wrapper_classes' => 'wu-w-2/3',
-								'options'         => [
-									'day'   => __('Days', 'ultimate-multisite'),
-									'week'  => __('Weeks', 'ultimate-multisite'),
-									'month' => __('Months', 'ultimate-multisite'),
-									'year'  => __('Years', 'ultimate-multisite'),
-								],
-							],
 						],
 					],
 					'has_setup_fee'         => [
@@ -1223,13 +1180,6 @@ class Product_Edit_Admin_Page extends Edit_Admin_Page {
 		 */
 		if ( ! wu_request('has_setup_fee')) {
 			$_POST['setup_fee'] = 0;
-		}
-
-		/*
-		 * Disabled Trial
-		 */
-		if ( ! wu_request('has_trial')) {
-			$_POST['trial_duration'] = 0;
 		}
 
 		/*
