@@ -30,8 +30,6 @@ class Membership_Status extends Enum {
 
 	const ACTIVE = 'active';
 
-	const TRIALING = 'trialing';
-
 	const EXPIRED = 'expired';
 
 	const ON_HOLD = 'on-hold';
@@ -49,7 +47,6 @@ class Membership_Status extends Enum {
 		return [
 			static::PENDING   => 'wu-bg-gray-200 wu-text-gray-700',
 			static::ACTIVE    => 'wu-bg-green-200 wu-text-green-700',
-			static::TRIALING  => 'wu-bg-orange-200 wu-text-orange-700',
 			static::ON_HOLD   => 'wu-bg-blue-200 wu-text-blue-700',
 			static::EXPIRED   => 'wu-bg-yellow-200 wu-text-yellow-700',
 			static::CANCELLED => 'wu-bg-red-200 wu-text-red-700',
@@ -67,7 +64,6 @@ class Membership_Status extends Enum {
 		return [
 			static::PENDING   => __('Pending', 'ultimate-multisite'),
 			static::ACTIVE    => __('Active', 'ultimate-multisite'),
-			static::TRIALING  => __('Trialing', 'ultimate-multisite'),
 			static::ON_HOLD   => __('On Hold', 'ultimate-multisite'),
 			static::EXPIRED   => __('Expired', 'ultimate-multisite'),
 			static::CANCELLED => __('Cancelled', 'ultimate-multisite'),

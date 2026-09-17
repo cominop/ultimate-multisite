@@ -3034,13 +3034,6 @@ class Membership extends Base_Model implements Limitable, Billable, Notable {
 	 */
 	public function save() {
 
-		// Set trial status if needed
-		if ($this->get_status() === Membership_Status::PENDING && $this->is_trialing() && ! $this->get_last_pending_payment()) {
-			if ($this->get_customer()->get_email_verification() !== 'pending') {
-				$this->set_status(Membership_Status::TRIALING);
-			}
-		}
-
 		if ($this->has_product_changes()) {
 			wu_enqueue_async_action(
 				'wu_async_after_membership_update_products',
